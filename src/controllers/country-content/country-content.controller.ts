@@ -97,4 +97,25 @@ export class CountryContentController {
     filename: file.filename
   };
 }
+
+@Delete('images')
+@UseGuards(JwtAuthGuard)
+async deleteImage(@Body() body: { imagePath: string }) {
+  const fs = require('fs');
+  const path = require('path');
+  
+  const imagePath = path.join(process.cwd(), 'assets', body.imagePath);
+  
+  try {
+    if (fs.existsSync(imagePath)) {
+      fs.unlinkSync(imagePath);
+      return { success: true, message: 'Изображение удалено' };
+    } else {
+      return { success: false, message: 'Файл не найден' };
+    }
+  } catch (error) {
+    throw new Error(`Ошибка удаления файла: ${error.message}`);
+  }
+}
+
 }

@@ -21,6 +21,9 @@ export class CountryContent implements ICountryContent {
 
   @Prop({ default: Date.now })
   updatedAt: Date;
+
+  @Prop({ type: [String], default: [] })
+  carouselImages: string[];
 }
 
 export const CountryContentSchema = SchemaFactory.createForClass(CountryContent);

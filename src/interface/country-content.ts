@@ -6,4 +6,5 @@ export interface ICountryContent {
   updatedAt?: Date;
   updatedBy?: string;
   _id?: mongoose.Types.ObjectId;
+  carouselImages?: string[];
 }

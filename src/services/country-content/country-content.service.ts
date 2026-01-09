@@ -23,22 +23,26 @@ export class CountryContentService {
   }
 
   async saveContent(countryContentDto: CountryContentDto): Promise<ICountryContent> {
-    const { countryId, content, updatedBy } = countryContentDto;
+    const { countryId, content, carouselImages = [], updatedBy } = countryContentDto;
     
     console.log('Saving content for countryId:', countryId);
     console.log('Content length:', content?.length);
-    console.log('Content preview:', content?.substring(0, 100));
+    console.log('Carousel images count:', carouselImages?.length);
+    console.log('Carousel images:', carouselImages);
     
     const existingContent = await this.countryContentModel.findOne({ countryId }).exec();
+    
+    const updateData = {
+      content,
+      carouselImages, // Добавляем изображения карусели
+      updatedBy,
+      updatedAt: new Date()
+    };
     
     if (existingContent) {
       const updated = await this.countryContentModel.findOneAndUpdate(
         { countryId },
-        { 
-          content,
-          updatedBy,
-          updatedAt: new Date()
-        },
+        updateData,
         { new: true }
       ).lean().exec();
       
@@ -47,6 +51,7 @@ export class CountryContentService {
       const newContent = new this.countryContentModel({
         countryId,
         content,
+        carouselImages, // Добавляем при создании
         updatedBy,
         updatedAt: new Date()
       });
@@ -69,6 +74,7 @@ export class CountryContentService {
     const emptyContent = new this.countryContentModel({
       countryId,
       content: '',
+      carouselImages: [], // Пустой массив по умолчанию
       updatedAt: new Date()
     });
     
