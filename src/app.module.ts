@@ -9,6 +9,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { CommentsModule } from './controllers/comments/comments.module';
 import { CountryContentModule } from './controllers/country-content/country-content.module'; 
+import { TeamModule } from './controllers/team/team.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CountryContentModule } from './controllers/country-content/country-cont
     CountryModule,
     CommentsModule,
     CountryContentModule,
+    TeamModule,
     
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'assets/uploads'),
