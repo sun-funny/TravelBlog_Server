@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CountryContent, CountryContentDocument } from 'src/shemas/country-content';
-import { CountryContentDto } from 'src/dto/country-content-dto';
-import { ICountryContent } from 'src/interface/country-content';
+import { CountryContentDto, CarouselPositionDto } from 'src/dto/country-content-dto';
+import { ICountryContent, CarouselPosition } from 'src/interface/country-content';
 
 @Injectable()
 export class CountryContentService {
@@ -23,18 +23,26 @@ export class CountryContentService {
   }
 
   async saveContent(countryContentDto: CountryContentDto): Promise<ICountryContent> {
-    const { countryId, content, carouselImages = [], updatedBy } = countryContentDto;
+    const { 
+      countryId, 
+      content, 
+      carouselImages = [], 
+      carouselPositions = [], // 🔥 ДОБАВИТЬ
+      updatedBy 
+    } = countryContentDto;
     
     console.log('Saving content for countryId:', countryId);
     console.log('Content length:', content?.length);
     console.log('Carousel images count:', carouselImages?.length);
     console.log('Carousel images:', carouselImages);
+    console.log('Carousel positions count:', carouselPositions?.length); // 🔥 ЛОГИРОВАНИЕ
     
     const existingContent = await this.countryContentModel.findOne({ countryId }).exec();
     
     const updateData = {
       content,
-      carouselImages, // Добавляем изображения карусели
+      carouselImages,
+      carouselPositions, // 🔥 ДОБАВИТЬ
       updatedBy,
       updatedAt: new Date()
     };
@@ -51,7 +59,8 @@ export class CountryContentService {
       const newContent = new this.countryContentModel({
         countryId,
         content,
-        carouselImages, // Добавляем при создании
+        carouselImages,
+        carouselPositions, // 🔥 ДОБАВИТЬ
         updatedBy,
         updatedAt: new Date()
       });
@@ -74,7 +83,8 @@ export class CountryContentService {
     const emptyContent = new this.countryContentModel({
       countryId,
       content: '',
-      carouselImages: [], // Пустой массив по умолчанию
+      carouselImages: [],
+      carouselPositions: [], // 🔥 ДОБАВИТЬ
       updatedAt: new Date()
     });
     
