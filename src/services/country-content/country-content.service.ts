@@ -13,13 +13,28 @@ export class CountryContentService {
   ) {}
 
   async getContent(countryId: string): Promise<ICountryContent> {
-    const content = await this.countryContentModel.findOne({ countryId }).lean().exec();
+    const content = await this.countryContentModel
+      .findOne({ countryId })
+      .lean()
+      .exec();
     
     if (!content) {
       return this.createEmptyContent(countryId);
     }
     
-    return content as unknown as ICountryContent;
+    // Преобразование позиций для корректного возврата
+    const result = {
+      ...content,
+      carouselPositions: content.carouselPositions?.map(pos => ({
+        x: pos.x || 0,
+        y: pos.y || 0,
+        scale: pos.scale || 1,
+        originalWidth: pos.originalWidth,
+        originalHeight: pos.originalHeight
+      })) || []
+    };
+    
+    return result as unknown as ICountryContent;
   }
 
   async saveContent(countryContentDto: CountryContentDto): Promise<ICountryContent> {
@@ -34,33 +49,32 @@ export class CountryContentService {
     console.log('=== SAVING CONTENT ===');
     console.log('Country ID:', countryId);
     console.log('Carousel images count:', carouselImages.length);
-    console.log('Carousel images:', carouselImages);
     console.log('Carousel positions count:', carouselPositions.length);
   
-    // Детальный лог позиций
+    // Логирование позиций
     carouselPositions.forEach((pos, index) => {
       console.log(`Position ${index}:`, {
-        x: pos.x,
-        y: pos.y,
-        scale: pos.scale,
-        originalWidth: pos.originalWidth,
-        originalHeight: pos.originalHeight
+        x: pos?.x || 0,
+        y: pos?.y || 0,
+        scale: pos?.scale || 1,
+        originalWidth: pos?.originalWidth,
+        originalHeight: pos?.originalHeight
       });
     });
   
-    const existingContent = await this.countryContentModel.findOne({ countryId }).exec();
-  
     // Валидация и преобразование позиций
-    const validatedCarouselPositions = (carouselPositions || []).map((pos: any, index: number) => ({
-      x: typeof pos.x === 'number' ? pos.x : 0,
-      y: typeof pos.y === 'number' ? pos.y : 0,
-      scale: typeof pos.scale === 'number' ? pos.scale : 1,
-      originalWidth: typeof pos.originalWidth === 'number' ? pos.originalWidth : undefined,
-      originalHeight: typeof pos.originalHeight === 'number' ? pos.originalHeight : undefined,
-      _index: index // Для отладки
-    }));
+    const validatedCarouselPositions = carouselImages.map((_, index) => {
+      const pos = carouselPositions?.[index] || {};
+      return {
+        x: typeof pos.x === 'number' ? pos.x : 0,
+        y: typeof pos.y === 'number' ? pos.y : 0,
+        scale: typeof pos.scale === 'number' ? pos.scale : 1,
+        originalWidth: typeof pos.originalWidth === 'number' ? pos.originalWidth : undefined,
+        originalHeight: typeof pos.originalHeight === 'number' ? pos.originalHeight : undefined
+      };
+    });
   
-    console.log('Validated positions:', validatedCarouselPositions);
+    console.log('Validated positions count:', validatedCarouselPositions.length);
   
     const updateData = {
       content,
@@ -70,16 +84,17 @@ export class CountryContentService {
       updatedAt: new Date()
     };
   
+    const existingContent = await this.countryContentModel.findOne({ countryId }).exec();
+  
     if (existingContent) {
-      const updated = await this.countryContentModel.findOneAndUpdate(
-        { countryId },
-        updateData,
-        { new: true }
-      ).lean().exec();
-    
-      console.log('Updated document:', updated);
-      return updated as unknown as ICountryContent;
+      // Обновляем существующий документ
+      Object.assign(existingContent, updateData);
+      const updated = await existingContent.save();
+      
+      console.log('Updated document with positions:', updated.carouselPositions?.length);
+      return updated.toObject() as ICountryContent;
     } else {
+      // Создаем новый документ
       const newContent = new this.countryContentModel({
         countryId,
         content,
@@ -90,7 +105,7 @@ export class CountryContentService {
       });
     
       const saved = await newContent.save();
-      console.log('Saved new document:', saved);
+      console.log('Saved new document with positions:', saved.carouselPositions?.length);
       return saved.toObject() as ICountryContent;
     }
   }

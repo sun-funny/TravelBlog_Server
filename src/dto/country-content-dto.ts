@@ -11,5 +11,5 @@ export class CountryContentDto {
   readonly content: string;
   readonly updatedBy?: string;
   readonly carouselImages?: string[];
-  readonly carouselPositions?: CarouselPositionDto[]; 
+  readonly carouselPositions?: CarouselPositionDto[];
 }
