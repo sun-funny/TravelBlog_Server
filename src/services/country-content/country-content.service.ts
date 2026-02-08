@@ -27,51 +27,70 @@ export class CountryContentService {
       countryId, 
       content, 
       carouselImages = [], 
-      carouselPositions = [], // 🔥 ДОБАВИТЬ
+      carouselPositions = [],
       updatedBy 
     } = countryContentDto;
-    
-    console.log('Saving content for countryId:', countryId);
-    console.log('Content length:', content?.length);
-    console.log('Carousel images count:', carouselImages?.length);
+  
+    console.log('=== SAVING CONTENT ===');
+    console.log('Country ID:', countryId);
+    console.log('Carousel images count:', carouselImages.length);
     console.log('Carousel images:', carouselImages);
-    console.log('Carousel positions count:', carouselPositions?.length); // 🔥 ЛОГИРОВАНИЕ
-    
+    console.log('Carousel positions count:', carouselPositions.length);
+  
+    // Детальный лог позиций
+    carouselPositions.forEach((pos, index) => {
+      console.log(`Position ${index}:`, {
+        x: pos.x,
+        y: pos.y,
+        scale: pos.scale,
+        originalWidth: pos.originalWidth,
+        originalHeight: pos.originalHeight
+      });
+    });
+  
     const existingContent = await this.countryContentModel.findOne({ countryId }).exec();
-    
+  
+    // Валидация и преобразование позиций
+    const validatedCarouselPositions = (carouselPositions || []).map((pos: any, index: number) => ({
+      x: typeof pos.x === 'number' ? pos.x : 0,
+      y: typeof pos.y === 'number' ? pos.y : 0,
+      scale: typeof pos.scale === 'number' ? pos.scale : 1,
+      originalWidth: typeof pos.originalWidth === 'number' ? pos.originalWidth : undefined,
+      originalHeight: typeof pos.originalHeight === 'number' ? pos.originalHeight : undefined,
+      _index: index // Для отладки
+    }));
+  
+    console.log('Validated positions:', validatedCarouselPositions);
+  
     const updateData = {
       content,
       carouselImages,
-      carouselPositions: carouselPositions.map(pos => ({
-        x: pos.x || 0,
-        y: pos.y || 0,
-        scale: pos.scale || 1,
-        originalWidth: pos.originalWidth,
-        originalHeight: pos.originalHeight
-      })),
+      carouselPositions: validatedCarouselPositions,
       updatedBy,
       updatedAt: new Date()
     };
-    
+  
     if (existingContent) {
       const updated = await this.countryContentModel.findOneAndUpdate(
         { countryId },
         updateData,
         { new: true }
       ).lean().exec();
-      
+    
+      console.log('Updated document:', updated);
       return updated as unknown as ICountryContent;
     } else {
       const newContent = new this.countryContentModel({
         countryId,
         content,
         carouselImages,
-        carouselPositions, // 🔥 ДОБАВИТЬ
+        carouselPositions: validatedCarouselPositions,
         updatedBy,
         updatedAt: new Date()
       });
-      
+    
       const saved = await newContent.save();
+      console.log('Saved new document:', saved);
       return saved.toObject() as ICountryContent;
     }
   }
