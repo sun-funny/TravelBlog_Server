@@ -42,7 +42,13 @@ export class CountryContentService {
     const updateData = {
       content,
       carouselImages,
-      carouselPositions, // 🔥 ДОБАВИТЬ
+      carouselPositions: carouselPositions.map(pos => ({
+        x: pos.x || 0,
+        y: pos.y || 0,
+        scale: pos.scale || 1,
+        originalWidth: pos.originalWidth,
+        originalHeight: pos.originalHeight
+      })),
       updatedBy,
       updatedAt: new Date()
     };
