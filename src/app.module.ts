@@ -4,7 +4,6 @@ import { AppService } from './app.service';
 import { UsersModule } from './controllers/users/users.module'; 
 import { MongooseModule } from '@nestjs/mongoose';
 import { TravelsModule } from './controllers/travels/travels.module';
-import { CountryModule } from "./controllers/country/country.module";
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { CommentsModule } from './controllers/comments/comments.module';
@@ -16,7 +15,6 @@ import { TeamModule } from './controllers/team/team.module';
     MongooseModule.forRoot('mongodb://localhost:27017/travels'),
     UsersModule,
     TravelsModule,
-    CountryModule,
     CommentsModule,
     CountryContentModule,
     TeamModule,

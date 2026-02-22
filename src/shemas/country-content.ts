@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { ICountryContent, CarouselPosition } from 'src/interface/country-content';
+import { ICountryContent} from 'src/interface/country-content';
 
 @Schema({ _id: false })
 export class CarouselPositionSchemaClass {
@@ -34,9 +34,6 @@ export class CountryContent {
 
   @Prop({ type: [String], default: [] })
   carouselImages: string[];
-
-  @Prop({ type: [CarouselPositionSchema], default: [] })
-  carouselPositions: CarouselPosition[];
 
   @Prop({ required: false })
   updatedBy?: string;
