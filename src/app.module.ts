@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './controllers/users/users.module'; 
@@ -9,6 +9,8 @@ import { join } from 'path';
 import { CommentsModule } from './controllers/comments/comments.module';
 import { CountryContentModule } from './controllers/country-content/country-content.module'; 
 import { TeamModule } from './controllers/team/team.module';
+import { CoordinatesModule } from './controllers/coordinates/coordinates.module';
+import { CoordinatesService } from './services/coodrinates/coordinates.service';
 
 @Module({
   imports: [
@@ -18,7 +20,8 @@ import { TeamModule } from './controllers/team/team.module';
     CommentsModule,
     CountryContentModule,
     TeamModule,
-    
+    CoordinatesModule,
+
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'assets/uploads'),
       serveRoot: '/uploads',
@@ -31,4 +34,11 @@ import { TeamModule } from './controllers/team/team.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  constructor(private coordinatesService: CoordinatesService) {}
+
+  async onModuleInit() {
+    // Инициализируем координаты при запуске приложения
+    await this.coordinatesService.initializeDefaultCoordinates();
+  }
+}
